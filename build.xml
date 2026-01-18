@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="ChatRoom" default="all" basedir=".">
+
+    <description>
+        ChatRoom applicayion de discution en ligne
+    </description>
+
+    <!-- Définition des repertoires -->
+    <property name="src.dir" location="src"/>
+    <property name="bin.dir" location="bin"/>
+    <property name="doc.dir" location="doc"/>
+    <property name="archive.dir" location="archive"/>
+
+    <!-- Définition des fichiers JAR -->
+    <property name="server.jar" value="ChatServer.jar"/>
+    <property name="client.jar" value="ChatClient.jar"/>
+
+    <!-- initialisation des repertoires -->
+    <target name="init">
+        <mkdir dir="${bin.dir}"/>
+        <mkdir dir="${doc.dir}"/>
+        <mkdir dir="${archive.dir}"/>
+    </target>
+
+    <!-- compilation des sources -->
+    <target name="compile" depends="init">
+        <javac srcdir="${src.dir}" 
+                destdir="${bin.dir}"
+                includeantruntime="false"
+                encoding="UTF-8"/>
+    </target>
+
+    <!-- archivage des fichiers -->
+    <target name="archive" depends="compile">
+        <jar destfile="${archive.dir}/ChatRoom.jar" 
+            basedir="${bin.dir}"/>
+    </target>
+
+    <!-- nettoyage des repertoires -->
+    <target name="clean">
+        <delete dir="${bin.dir}"/>
+        <delete dir="${doc.dir}"/>
+        <delete dir="${archive.dir}"/>
+    </target>
+
+    <!-- documentation -->
+    <target name="doc" depends="init">
+        <javadoc sourcepath="${src.dir}"
+                 destdir="${doc.dir}"
+                 author="true"
+                 version="true"
+                 use="true"
+                 charset="UTF-8"/>
+    </target>
+
+    <!-- server-jar : créer le JAR serveur -->
+    <target name="server-jar" depends="compile">
+        <jar destfile="${archive.dir}/${server.jar}">
+            <fileset dir="${bin.dir}">
+                <include name="common/**"/>
+                <include name="serveur/**"/>
+            </fileset>
+            <manifest>
+                <attribute name="Main-Class" value="serveur.ChatRoomImpl"/>
+            </manifest>
+        </jar>
+    </target> 
+
+    <!-- client-jar : créer le JAR client -->
+    <target name="client-jar" depends="compile">
+        <jar destfile="${archive.dir}/${client.jar}">
+            <fileset dir="${bin.dir}">
+                <include name="common/**"/>
+                <include name="client/**"/>
+            </fileset>
+            <manifest>
+                <attribute name="Main-Class" value="client.ChatUserImpl"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <!-- all : créer tous les JARs -->
+    <target name="all"
+            depends="clean, compile, doc, server-jar, client-jar"/>
+
+    <!-- run-server : lancer le serveur -->
+    <target name="run-server" depends="compile">
+        <java classname="serveur.ChatRoomImpl" 
+              fork="true"
+              classpath="${bin.dir}">
+            <jvmarg value="-Djava.rmi.server.hostname=localhost"/>
+        </java>
+    </target>
+
+    <!-- run-client : lancer le client -->
+    <target name="run-client" depends="compile">
+        <java classname="client.ChatUserImpl" 
+              fork="true"
+              classpath="${bin.dir}">
+        </java>
+    </target>
+</project>

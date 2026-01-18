@@ -1,0 +1,18 @@
+# --- Dossiers générés (À ignorer) ---
+bin/
+build/
+dist/
+doc/
+javadoc/
+
+# --- Fichiers IDE (Eclipse, IntelliJ, VS Code) ---
+.settings/
+.classpath
+.project
+.idea/
+*.iml
+.nbprojects/
+
+# --- Divers ---
+*.log
+*.class
