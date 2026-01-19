@@ -9,8 +9,7 @@ import java.rmi.server.*;
 import common.ChatRoom;
 import common.ChatUser;
 
-public class ChatUserImpl extends UnicastRemoteObject implements ChatUser 
-{
+public class ChatUserImpl extends UnicastRemoteObject implements ChatUser {
     private String title = "Logiciel de discussion en ligne";
     private String pseudo = null;
 
@@ -20,16 +19,14 @@ public class ChatUserImpl extends UnicastRemoteObject implements ChatUser
     private JButton btnSend = new JButton("Envoyer");
     private ChatRoom chatRoom;
 
-    public ChatUserImpl(ChatRoom chatRoom) throws RemoteException
-    {
+    public ChatUserImpl(ChatRoom chatRoom) throws RemoteException {
         this.chatRoom = chatRoom;
         this.createIHM();
         this.requestPseudo();
         this.chatRoom.subscribe(this, this.pseudo);
     }
 
-    public void createIHM() 
-    {
+    public void createIHM() {
         // Assemblage des composants
         JPanel panel = (JPanel) this.window.getContentPane();
         JScrollPane sclPane = new JScrollPane(txtOutput);
@@ -41,26 +38,20 @@ public class ChatUserImpl extends UnicastRemoteObject implements ChatUser
         panel.add(southPanel, BorderLayout.SOUTH);
 
         // Gestion des évènements
-        window.addWindowListener(new WindowAdapter() 
-        {
-            public void windowClosing(WindowEvent e) 
-            {
+        window.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
                 window_windowClosing(e);
             }
         });
 
-        btnSend.addActionListener(new ActionListener() 
-        {
-            public void actionPerformed(ActionEvent e) 
-            {
+        btnSend.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
                 btnSend_actionPerformed(e);
             }
         });
 
-        txtMessage.addKeyListener(new KeyAdapter() 
-        {
-            public void keyReleased(KeyEvent event) 
-            {
+        txtMessage.addKeyListener(new KeyAdapter() {
+            public void keyReleased(KeyEvent event) {
                 if (event.getKeyChar() == '\n')
                     btnSend_actionPerformed(null);
             }
@@ -74,83 +65,76 @@ public class ChatUserImpl extends UnicastRemoteObject implements ChatUser
         this.txtMessage.requestFocus();
     }
 
-    public void requestPseudo() 
-    {
-        this.pseudo = JOptionPane.showInputDialog
-            (
+    public void requestPseudo() {
+        this.pseudo = JOptionPane.showInputDialog(
                 this.window, "Entrez votre pseudo : ",
-                this.title, JOptionPane.OK_OPTION
-            );
+                this.title, JOptionPane.OK_OPTION);
 
         if (this.pseudo == null)
             System.exit(0);
     }
 
-    public void sendMessage()
-{
-    try
-    {
-        String text = this.txtMessage.getText();
-        if (!text.trim().isEmpty()) 
-        {
-            this.chatRoom.postMessage(this.pseudo, text);
-            this.txtMessage.setText("");
-            this.txtMessage.requestFocus();
+    public void sendMessage() {
+        try {
+            String text = this.txtMessage.getText();
+            if (!text.trim().isEmpty()) {
+                this.chatRoom.postMessage(this.pseudo, text);
+                this.txtMessage.setText("");
+                this.txtMessage.requestFocus();
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this.window, "Erreur d'envoi au serveur");
         }
     }
-    catch (RemoteException e)
-    {
-        e.printStackTrace();
-        JOptionPane.showMessageDialog(this.window, "Erreur d'envoi au serveur");
-    }
-}
 
-    public void displayMessage(String message)
-    {
+    public void displayMessage(String message) {
         this.txtOutput.append(message + "\n");
     }
 
-    public void window_windowClosing(WindowEvent e) 
-    {
-        try 
-        {
-            if (this.chatRoom != null) 
-            {
+    public void window_windowClosing(WindowEvent e) {
+        try {
+            if (this.chatRoom != null) {
                 this.chatRoom.unsubscribe(this.pseudo);
             }
-        } 
-        catch (RemoteException ex) 
-        {
+        } catch (RemoteException ex) {
             ex.printStackTrace();
         }
         System.exit(0);
     }
 
-    public void btnSend_actionPerformed(ActionEvent e) 
-    {
+    public void btnSend_actionPerformed(ActionEvent e) {
         this.sendMessage();
     }
 
-    public static void main(String[] args) 
-    {
-        try
-        {
-            // Adresse du serveur
-            String serverAddress ="192.168.1.2";
+    public static void main(String[] args) {
+        try {
+            // DÉTECTION AUTOMATIQUE DE L'IP DU CLIENT
+            String clientIP = "";
+            try (final java.net.DatagramSocket socket = new java.net.DatagramSocket()) {
+                socket.connect(java.net.InetAddress.getByName("8.8.8.8"), 10002);
+                clientIP = socket.getLocalAddress().getHostAddress();
+            }
+
+            System.out.println("--> Mon IP Client (pour le callback) est : " + clientIP);
+
+            System.setProperty("java.rmi.server.hostname", clientIP);
+
+            String serverAddress = "192.168.1.2";
+
             String rmiUrl = "rmi://" + serverAddress + ":1099/ChatRoom";
-            
-            System.out.println("Connexion au serveur : " + rmiUrl);
+
+            System.out.println("--> Tentative de connexion au serveur : " + rmiUrl);
             ChatRoom chatRoom = (ChatRoom) Naming.lookup(rmiUrl);
+
             new ChatUserImpl(chatRoom);
-        }
-        catch (Exception e)
-        {
+            System.out.println("--> Client connecté et prêt !");
+        } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, 
-                "Impossible de se connecter au serveur.\n" +
-                "Vérifiez que le serveur est démarré et accessible.",
-                "Erreur de connexion", 
-                JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null,
+                    "Erreur critique :\n" + e.getMessage(),
+                    "Erreur",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 }
