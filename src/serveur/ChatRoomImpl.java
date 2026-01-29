@@ -14,55 +14,44 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoom {
 
     private Map<String, ChatUser> users;
 
-    public ChatRoomImpl() throws RemoteException 
-    {
+    public ChatRoomImpl() throws RemoteException {
         users = new HashMap<>();
         System.out.println("Serveur de chat démarré...");
     }
 
     @Override
-    public synchronized void subscribe(ChatUser user, String pseudo) throws RemoteException 
-    {
+    public synchronized void subscribe(ChatUser user, String pseudo) throws RemoteException {
         users.put(pseudo, user);
-        broadcast("🔔 " + pseudo + " a rejoint la discussion.");
+        broadcast(pseudo + " a rejoint la discussion.");
     }
 
     @Override
-    public synchronized void unsubscribe(String pseudo) throws RemoteException 
-    {
+    public synchronized void unsubscribe(String pseudo) throws RemoteException {
         users.remove(pseudo);
-        broadcast("🔕 " + pseudo + " a quitté la discussion.");
+        broadcast(pseudo + " a quitté la discussion.");
     }
 
     @Override
-    public synchronized void postMessage(String pseudo, String message) throws RemoteException 
-    {
+    public synchronized void postMessage(String pseudo, String message) throws RemoteException {
         broadcast(pseudo + " : " + message);
     }
 
-    private void broadcast(String message) 
-    {
-        for (ChatUser user : users.values()) 
-        {
-            try 
-            {
+    private void broadcast(String message) {
+        for (ChatUser user : users.values()) {
+            try {
                 user.displayMessage(message);
-            } 
-            catch (RemoteException e) 
-            {
+            } catch (RemoteException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public static void main(String[] args) 
-    {
-        try 
-        {
+    public static void main(String[] args) {
+        try {
             // Adresse du serveur
-            String hostname = "192.168.1.2";
+            String hostname = "192.168.1.7";
             System.setProperty("java.rmi.server.hostname", hostname);
-            
+
             // Lancement du registre RMI
             Registry registry = LocateRegistry.createRegistry(1099);
 
@@ -72,9 +61,7 @@ public class ChatRoomImpl extends UnicastRemoteObject implements ChatRoom {
 
             System.out.println("Salle de discussion prête.");
             System.out.println("Serveur RMI accessible sur : " + hostname + ":1099");
-        } 
-        catch (Exception e) 
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

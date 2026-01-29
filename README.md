@@ -26,7 +26,6 @@ Le projet est organisé en trois packages principaux :
 -  Envoi et réception de messages en temps réel
 -  Notifications de connexion/déconnexion des utilisateurs
 -  Interface graphique intuitive avec Swing
--  Gestion automatique des erreurs de connexion
 -  Support de l'envoi de messages par touche Entrée
 
 ## Prérequis
@@ -65,12 +64,12 @@ Avant de lancer l'application, vous devez configurer l'adresse IP du serveur :
 
 1. **Dans `ChatRoomImpl.java` (ligne 63)** :
 ```java
-String hostname = "192.168.1.2"; // Remplacez par l'IP de votre serveur
+String hostname = "192.168.1.7"; // Remplacez par l'IP de votre serveur
 ```
 
 2. **Dans `ChatUserImpl.java` (ligne 139)** :
 ```java
-String serverAddress = "192.168.1.2"; // Remplacez par l'IP du serveur
+String serverAddress = "192.168.1.7"; // Remplacez par l'IP du serveur
 ```
 
 ### Démarrage du Serveur

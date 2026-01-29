@@ -120,7 +120,7 @@ public class ChatUserImpl extends UnicastRemoteObject implements ChatUser {
 
             System.setProperty("java.rmi.server.hostname", clientIP);
 
-            String serverAddress = "192.168.1.2";
+            String serverAddress = "192.168.1.7";
 
             String rmiUrl = "rmi://" + serverAddress + ":1099/ChatRoom";
 
